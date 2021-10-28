@@ -39,7 +39,7 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
-Describe any challenges encountered while building the app.
+To the reviewer--I don't follow enough people on Twitter to get an easy refresh showing new tweets, so instead I followed a few more people than I had before the refresh to show the drag-down to refresh functionality.
 
 ## Open-source libraries used
 
