@@ -15,6 +15,7 @@ public class Tweet {
     public String createdAt;
     public User user;
     public String relativeTime;
+    public Long id;
 
     public static Tweet fromJson(JSONObject jsonObject) throws JSONException {
         Tweet tweet = new Tweet();
@@ -24,7 +25,9 @@ public class Tweet {
 
         String unformattedTime = jsonObject.getString("created_at");
         tweet.relativeTime = TimeFormatter.getTimeDifference(unformattedTime);
-        
+
+        tweet.id = jsonObject.getLong("id");
+
         return tweet;
     }
 

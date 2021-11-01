@@ -28,6 +28,7 @@ public class TimelineActivity extends AppCompatActivity {
     List<Tweet> tweets;
     TweetsAdapter adapter;
     SwipeRefreshLayout swipeContainer;
+    EndlessRecyclerViewScrollListener scrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +45,8 @@ public class TimelineActivity extends AppCompatActivity {
         adapter = new TweetsAdapter(this, tweets);
 
         // recycler view setup: layout manager and the adapter
-        rvTweets.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        rvTweets.setLayoutManager(layoutManager);
         rvTweets.setAdapter(adapter);
 
         // set up swipe to refresh container
@@ -64,7 +66,50 @@ public class TimelineActivity extends AppCompatActivity {
             }
         });
 
+        // setup scroll listener for infinite pagination
+        scrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                // should get triggered whenever we scroll down far enough to need to load more
+                //  data and append it to our list of data. SO, add whatever code is needed
+                //  to append data to our list
+                Log.i(TAG, "onLoadMore: " + page);
+                loadMoreData();
+            }
+        };
+        rvTweets.addOnScrollListener(scrollListener); // add it to the RecyclerView
+
         populateHomeTimeline();
+    }
+
+    // Append the next page of data into the adapter
+    // This method probably sends out a network request and appends new data items to your adapter.
+    private void loadMoreData() {
+        // Send an API request to retrieve appropriate paginated data
+        //  --> Send the request including an offset value (i.e `page`) as a query parameter.
+        //  --> Deserialize and construct new model objects from the API response
+        client.getNextPageOfTweets(new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                Log.i(TAG, "onSuccess for loadMoreData: " + json.toString());
+
+                JSONArray jsonArray = json.jsonArray;
+                try {
+                    //  --> Append the new data objects to the existing set of items inside the array of items
+                    List<Tweet> tweets = Tweet.fromJsonArray(jsonArray);
+
+                    //  --> Notify the adapter of the new items made with `notifyItemRangeInserted()`
+                    adapter.addAll(tweets);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Log.i(TAG, "onFailure for loadMoreData: " + throwable);
+            }
+        }, tweets.get(tweets.size() - 1).id); // offset value of last tweet
     }
 
     private void populateHomeTimeline() {
