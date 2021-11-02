@@ -25,6 +25,10 @@ public class LoginActivity extends OAuthLoginActionBarActivity<TwitterClient> {
 
 		sampleModelDao = ((TwitterApp) getApplicationContext()).getMyDatabase().sampleModelDao();
 
+		// allows us to have a background thread so that we're not trying to do this database
+		// 	stuff on the same thread that the UI app is running on. Android will actually crash
+		// 	the app if there's too much activity on the UI thread, so this AsyncTask background
+		// 	thread prevents that possible issues and improves UI app performance.
 		AsyncTask.execute(new Runnable() {
 			@Override
 			public void run() {
